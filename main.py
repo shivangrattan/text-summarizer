@@ -289,14 +289,14 @@ st.write("")
 st.write("")
 sn = int(st.number_input("Enter Number of Sentences for GloVe Word Embedding: ", min_value=0, value=1))
 
-min = int(st.number_input("Enter Minimum Length for BART Summary: ", min_value=0, value=min([len(x) for x in sentences])))
-max = int(st.number_input("Enter Maxmimum Length for BART Summary: ", min_value=0, value=int(max([len(x) for x in sentences])/2)))
+min = int(st.number_input("Enter Minimum Length for Transformer Summary: ", min_value=0, value=min([len(x) for x in sentences])))
+max = int(st.number_input("Enter Maxmimum Length for Transformer Summary: ", min_value=0, value=int(max([len(x) for x in sentences])/2)))
 
 
 # Define the subheader text
 subheader_text = "TF-IDF Approach Summary:"
 subheader_text2 = "GloVe Word Embedding Approach Summary:"
-subheader_text3 = "BART Large CNN Model Transformer Summary:"
+subheader_text3 = "Transformer Summary:"
 
 # Define the CSS for the gradient background
 gradient_bg_css = """
@@ -337,7 +337,7 @@ st.write("")
 st.markdown(styled_subheader3, unsafe_allow_html=True)
 st.write("")
 
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+summarizer = pipeline("summarization", model="google-t5/t5-small")
 summary = summarizer(text, max_length=max, min_length=min, do_sample=False)
 print(summary)
-st.write(' '.join(summary[0]['summary_text']))
+st.write(summary[0]['summary_text'])
