@@ -63,24 +63,14 @@ st.write("")
 input_method = st.radio("Select a method to input data: " ,("Enter Manually", "Upload Data"))
 
 # Show appropriate input widgets based on the selected input method
-if input_method == "Upload data":
-    st.subheader("Upload Data")
-    upload_file()
-
-elif input_method == "Enter Manually":
+if input_method == "Enter Manually":
     st.subheader("Enter Data Manually")
     enter_manually()
 
-st.write("")
-st.write("")
+elif input_method == "Upload Data":
+    st.subheader("Upload Data")
+    upload_file()
 
-preproc = st.radio("Choose Between Stemming and Lemmatization: ", ("Stemming", "Lemmatization"))
-
-st.write("")
-st.write("")
-
-user_input = st.number_input("Enter Threshold for TF-IDF Summary:", value=1.0)
-text  = text1 
 
 def create_frequency_table(text_string, preproc) -> dict:
     stopWords = set(stopwords.words("english"))
@@ -268,76 +258,95 @@ def rank_sentences(sim_mat):
     ranked_sentences = sorted(((scores[i],s) for i,s in enumerate(sentences)), reverse=True)
     return ranked_sentences
 
-# TF-IDF
-sentences = sent_tokenize(text)
-total_documents = len(sentences)
-freq_matrix = create_frequency_matrix(sentences, preproc)
-tf_matrix = create_tf_matrix(freq_matrix)
-count_doc_per_words = create_documents_per_words(freq_matrix)
-idf_matrix = create_idf_matrix(freq_matrix, count_doc_per_words, total_documents)
-tf_idf_matrix = create_tf_idf_matrix(tf_matrix, idf_matrix)
-sentence_scores = score_sentences(tf_idf_matrix)
-threshold = find_average_score(sentence_scores)
-summary_tf_idf = generate_summary(sentences, sentence_scores, user_input * threshold)
+if len(text1) != 0:
+    st.write("")
+    st.write("")
 
-# Word Embeddings
-word_embeddings = create_word_embeddings("glove.6B.50d.gz")
-sim_mat = create_sim_mat(word_embeddings)
-ranked_sentences = rank_sentences(sim_mat)
+    preproc = st.radio("Choose Between Stemming and Lemmatization: ", ("Stemming", "Lemmatization"))
 
-st.write("")
-st.write("")
-sn = int(st.number_input("Enter Number of Sentences for GloVe Word Embedding: ", min_value=0, value=1))
+    st.write("")
+    st.write("")
 
-min = int(st.number_input("Enter Minimum Length for Transformer Summary: ", min_value=0, value=min([len(x) for x in sentences])))
-max = int(st.number_input("Enter Maxmimum Length for Transformer Summary: ", min_value=0, value=int(max([len(x) for x in sentences])/2)))
+    user_input = st.number_input("Enter Threshold for TF-IDF Summary:", value=1.0)
+    text  = text1 
 
+    # TF-IDF
+    sentences = sent_tokenize(text)
+    total_documents = len(sentences)
+    freq_matrix = create_frequency_matrix(sentences, preproc)
+    tf_matrix = create_tf_matrix(freq_matrix)
+    count_doc_per_words = create_documents_per_words(freq_matrix)
+    idf_matrix = create_idf_matrix(freq_matrix, count_doc_per_words, total_documents)
+    tf_idf_matrix = create_tf_idf_matrix(tf_matrix, idf_matrix)
+    sentence_scores = score_sentences(tf_idf_matrix)
+    threshold = find_average_score(sentence_scores)
+    summary_tf_idf = generate_summary(sentences, sentence_scores, user_input * threshold)
 
-# Define the subheader text
-subheader_text = "TF-IDF Approach Summary:"
-subheader_text2 = "GloVe Word Embedding Approach Summary:"
-subheader_text3 = "Transformer Summary:"
-
-# Define the CSS for the gradient background
-gradient_bg_css = """
-    background: linear-gradient(to right, #4C0FB5, #198DD0); 
-    padding: 10px; 
-    border-radius: 10px; 
-    color: white;
-"""
-
-# Combine subheader text with gradient background CSS
-styled_subheader = f"<div style='{gradient_bg_css}'>{subheader_text}</div>"
-styled_subheader2 = f"<div style='{gradient_bg_css}'>{subheader_text2}</div>"
-styled_subheader3 = f"<div style='{gradient_bg_css}'>{subheader_text3}</div>"
-
-
-# Render the subheader
-st.write("")
-st.write("")
-st.markdown(styled_subheader, unsafe_allow_html=True)
-st.write("")
-st.write(summary_tf_idf)
-st.write("")
-st.write("")
-
-# Generate summary
-st.markdown(styled_subheader2, unsafe_allow_html=True)
-st.write("")
-summary_glove = ""
-# Generate summary
-for i in range(sn):
-    summary_glove += (ranked_sentences[i][1] + " ")
+    st.write("")
+    st.write("")
     
-st.write(summary_glove)
-st.write("")
-st.write("")
+    sn = int(st.number_input("Enter Number of Sentences for GloVe Word Embedding: ", min_value=0, value=1))
+    
+    st.write("")
+    st.write("")
+    
+    min = int(st.number_input("Enter Minimum Length for Transformer Summary: ", min_value=0, value=min([len(x) for x in sentences])))
+    
+    st.write("")
+    st.write("")
+    
+    max = int(st.number_input("Enter Maxmimum Length for Transformer Summary: ", min_value=0, value=int(max([len(x) for x in sentences])/2)))
 
-# Generate summary
-st.markdown(styled_subheader3, unsafe_allow_html=True)
-st.write("")
+    # Define the subheader text
+    subheader_text = "TF-IDF Approach Summary:"
+    subheader_text2 = "GloVe Word Embedding Approach Summary:"
+    subheader_text3 = "Transformer Summary:"
 
-summarizer = pipeline("summarization", model="google-t5/t5-small")
-summary = summarizer(text, max_length=max, min_length=min, do_sample=False)
-print(summary)
-st.write(summary[0]['summary_text'])
+    # Define the CSS for the gradient background
+    gradient_bg_css = """
+        background: linear-gradient(to right, #4C0FB5, #198DD0); 
+        padding: 10px; 
+        border-radius: 10px; 
+        color: white;
+    """
+
+    # Combine subheader text with gradient background CSS
+    styled_subheader = f"<div style='{gradient_bg_css}'>{subheader_text}</div>"
+    styled_subheader2 = f"<div style='{gradient_bg_css}'>{subheader_text2}</div>"
+    styled_subheader3 = f"<div style='{gradient_bg_css}'>{subheader_text3}</div>"
+
+
+    # Render the subheader
+    st.write("")
+    st.write("")
+    st.markdown(styled_subheader, unsafe_allow_html=True)
+    st.write("")
+    st.write(summary_tf_idf)
+    st.write("")
+    st.write("")
+
+    st.markdown(styled_subheader2, unsafe_allow_html=True)
+    st.write("")
+
+    # GloVe 
+    summary_glove = ""
+    word_embeddings = create_word_embeddings("glove.6B.50d.gz")
+    sim_mat = create_sim_mat(word_embeddings)
+    ranked_sentences = rank_sentences(sim_mat)
+    for i in range(sn):
+        summary_glove += (ranked_sentences[i][1] + " ")
+        
+    st.write(summary_glove)
+    st.write("")
+    st.write("")
+
+    # Generate summary
+    st.markdown(styled_subheader3, unsafe_allow_html=True)
+    st.write("")
+
+    summarizer = pipeline("summarization", model="google-t5/t5-small")
+    summary = summarizer(text, max_length=max, min_length=min, do_sample=False)
+    summary = summary[0]['summary_text'].split('.')
+    summary = [x.strip() for x in summary]
+    summary = [x[0].upper() + x[1:] + '.' for x in summary if len(x) != 0]
+    st.write(' '.join(summary))
